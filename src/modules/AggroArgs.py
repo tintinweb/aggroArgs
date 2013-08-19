@@ -170,16 +170,27 @@ class AggroArgs(object):
         usage = self._shell("%s --help -h"%p, shell=True, max_execution_time=1) 
         # parse args for cmdline switches
         # prepare args array
-        # long: --[a-zA-Z0-9]+
-        # short: -[a-zA-Z0-9]+
+        # long: \s--[a-zA-Z0-9]+
+        # short: \s-[a-zA-Z0-9]+
+        short = True        #long args?
         m = re.findall(r"(\s-[a-zA-Z0-9]+)",usage)
+        if not m:
+            # check long params
+            m = re.findall(r"(\s--[a-zA-Z0-9]+)",usage)
+            short=False
         if m:
             if '-h' in m: m.remove("-h")
             args = []
             for a in m:
                 # append -switch, param, -switch,param
-                args.append(a)
-                args.append(self.createPatternCyclic(param_size))
+                a=a.strip()
+                if short:
+                    #append option, value
+                    args.append(a)
+                    args.append(self.createPatternCyclic(param_size))
+                else:
+                    #append option=value
+                    args.append("%s=%s"%(a,self.createPatternCyclic(param_size)))
         else:
             args = [self.createPatternCyclic(param_size) for x in range(params)]
         
