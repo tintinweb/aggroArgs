@@ -1,8 +1,8 @@
 '''
 Created on 19.08.2013
 
-@author: martin
-@version: 1.2
+@author: tintinweb
+@version: 1.3
 '''
 if __name__=='__main__':
     import modules.QA_Logger as QA_Logger

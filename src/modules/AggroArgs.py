@@ -3,7 +3,7 @@
 '''
 Created on 19.08.2013
 
-@author: mortner
+@author: tintinweb
 '''
 
 import modules.QA_Logger as QA_Logger
@@ -303,6 +303,7 @@ if __name__=='__main__':
         
     if not len(arguments):
         print SimpleOptparse.buildUsageString(optDef)
+        b = AggroArgs(".",filter=options['file-extensions'], blacklist=options['blacklist'], recursive=not(options['no-recursion']))
         exit()
         
     if options['file-extensions']:
