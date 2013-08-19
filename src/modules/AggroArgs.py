@@ -26,6 +26,9 @@ class Hit(object):
         self.args=args
         self.loglines=loglines
         self.addr2line=addr2line
+        
+        # set buffer overflow detection output to be written to stderr
+        os.environ['LIBC_FATAL_STDERR_']='1'
 
 
 class AggroArgs(object):
@@ -204,7 +207,7 @@ class AggroArgs(object):
             ret = self._shell(cmd=p, args=args, max_execution_time=max_execution_time) 
             last_log = self._check_log(compare_with=last_log)
             #handle buffer overflow caught by stack guard
-            if any(s in ret.lower() for s in ['overflow','backtrace','memory map']):
+            if any(s in ret.lower() for s in ['terminated','overflow','backtrace','memory map']):
                 last_log.append(ret)
                 LOG.warning("Buffer overflow caught by stack_guard - %s"%p)
                 
