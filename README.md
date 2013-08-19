@@ -1,10 +1,10 @@
 aggroArgs v1.2
 ===============
 
-Bruteforce commandline buffer overflows, linux, aggressive arguments
+Tags: brute-force command-line based buffer overflows, aggressive arguments
 
 
-ProTip: do not run on your local machine or things might get tricky :)
+*ProTip*: srsly, do NOT run this script in a productive environment (yes, this includes your workstation!) or things might get tricky :)
 
 
 Features
@@ -19,6 +19,7 @@ Features
 
 Notes
 =========
+
 * python 2.4
 	#> unzip aggroArgs.zip
 	#> python __main__.py --help
@@ -43,23 +44,24 @@ Usage
 	                                             *** DEFAULT='5'
 	  -v <value>, --verbosity=<value>            Enable verbose output.
 	                                             *** DEFAULT='20'
+	  -m <value>, --modes=<value>                probe options (e.g. long,short,default).
+	                                             *** DEFAULT='short,long,default'
 	  -f <value>, --file-extensions=<value>      filter file extensions.
 	                                             *** DEFAULT='None'
-	                                             
-	                                             
-	                                             
-	                                             
+
+                            
 	                                             
 Use-Cases
 ==========
+
 probe long, short and bruteforce commandline params skipping all *.so, *.so.* files and reboot,shutdown,runlevel,init
 
-	#> aggroArgs.zip --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init /usr/bin                          
+	#> aggroArgs.zip --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init,script /usr/bin                          
 	                                             
 probe short options only:
 
-	#> aggroArgs.zip --modes=short --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init /usr/bin  
+	#> aggroArgs.zip --modes=short --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init,script,rm /usr/bin  
 	
 verbose output  (DEBUG 10 ... 50 CRITICAL):
 
-	#> aggroArgs.zip --verbosity=10 --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init /usr/bin 
+	#> aggroArgs.zip --verbosity=10 --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init,script,rm /usr/bin 
