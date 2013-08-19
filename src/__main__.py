@@ -11,14 +11,15 @@ if __name__=='__main__':
     from modules.AggroArgs import AggroArgs
     
     optDef = {  
-            (('--help',     '-h')       ,"This help"):                                False,
-            (('--verbosity',  '-v')       ,"Enable verbose output"):                    QA_Logger.QA_Logger.L_INFO,
-            (('--file-extensions',  '-f')       ,"filter file extensions"):           None,
-            (('--blacklist','-b')       ,"Filename blacklists"):                        "*.so,*.so.*",
-            (('--params','-p')       ,"number of params to supply"):                     1,
-            (('--param-length','-l')       ,"max length of a param passed to executable"): 999,     
-            (('--process-timeout','-t')       ,"max alive time of a process in seconds"): 5,   
-            (('--no-recursion', '-R'),       "no recursive file scanning"):              False,   
+            (('--help',     '-h'),              "This help"):                                   False,
+            (('--verbosity',  '-v'),            "Enable verbose output"):                       QA_Logger.QA_Logger.L_INFO,
+            (('--file-extensions',  '-f'),      "filter file extensions"):                      None,
+            (('--blacklist','-b'),              "Filename blacklists"):                         "*.so,*.so.*",
+            (('--params','-p'),                 "number of params to supply"):                  1,
+            (('--param-length','-l'),           "max length of a param passed to executable"):  999,     
+            (('--process-timeout','-t'),        "max alive time of a process in seconds"):      5,   
+            (('--no-recursion', '-R'),          "no recursive file scanning"):                  False,   
+            (('--modes', '-m'),                 "probe options (e.g. long,short,default)"):     "short,long,default",   
           }
     options,arguments=SimpleOptparse.parseOpts(optDef)
     LOG.setLevel(int(options['verbosity']))
@@ -33,6 +34,9 @@ if __name__=='__main__':
     if options['blacklist']:
         options['blacklist']=options['blacklist'].split(",")
         LOG.info("Skipping blacklisted for files: %s"%options['blacklist'])
+    if options['modes']:
+        options['modes']=options['modes'].split(",")
+        LOG.info("option probing modes enabled: %s"%options['modes'])
         
     # start the magic
     results = {}
@@ -40,7 +44,8 @@ if __name__=='__main__':
         b = AggroArgs(path,filter=options['file-extensions'], blacklist=options['blacklist'], recursive=not(options['no-recursion']))
         b.attack(params=int(options['params']), 
                  param_size=int(options['param-length']),
-                 max_execution_time=int(options['process-timeout']))
+                 max_execution_time=int(options['process-timeout']),
+                 modes=options['modes'])
         results[path]=b.hits[:]
     
     # end of magic

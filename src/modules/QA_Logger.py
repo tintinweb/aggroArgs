@@ -291,7 +291,11 @@ class QA_Logger(logging.Logger):
             self.stats['Level%d'%(level)] =1 
         #return super(self.__class__,self)._log(level, msg, args, exc_info, extra)
         #fix for python <=2.5
-        return logging.Logger._log(self, level, self.__colorize(msg,level), args, exc_info, extra)
+        try:
+            return logging.Logger._log(self, level, self.__colorize(msg,level), args, exc_info, extra)
+        except:
+            #python 2.4 fix
+            return logging.Logger._log(self, level, self.__colorize(msg,level),  exc_info, extra)
     
     
     def __colorize(self,msg,level):
