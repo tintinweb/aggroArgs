@@ -21,11 +21,12 @@ except:
         return False
 
 class Hit(object):
-    def __init__(self,path,args, loglines,addr2line):
+    def __init__(self,path,args, loglines,addr2line,eip_analysis):
         self.path=path
         self.args=args
         self.loglines=loglines
         self.addr2line=addr2line
+        self.eip_analysis = eip_analysis
         
         # set buffer overflow detection output to be written to stderr
         os.environ['LIBC_FATAL_STDERR_']='1'
@@ -164,6 +165,26 @@ class AggroArgs(object):
             ret.append(self._shell("addr2line -e %s %s"%(executable,sp),shell=True))
             
         return ret
+    
+    def _eip_to_pattern_location(self,dmesg_line):
+        #[2178587.552851] libsmphibsplugi[8562]: segfault at 2 ip 0000000000000002 sp 00000000ffbd2ce4 error 14
+        c_segf = re.compile(r"at ([\da-fA-F]+) ip ([\da-fA-F]+) sp ([\da-fA-F]+)",)
+        m = c_segf.search(dmesg_line)
+        ret = {}
+        if m:
+            at,ip,sp = m.groups()
+            ret['at']=at
+            ret['ip']=ip
+            ret['sp']=sp
+            try:
+                ret['eip_ascii']=at.decode('hex')
+                ret['eip_ascii_real']=ret['eip_ascii'][::-1]
+                ret['eip_offset']=self.createPatternCyclic(9999).index(ret['eip_ascii_real'])
+            except ValueError, ve:
+                pass
+            except TypeError, te:
+                pass
+        return ret
         
     def _prepare_args(self,p,params,param_size, mode=None):
         
@@ -181,6 +202,7 @@ class AggroArgs(object):
             if not m: raise Exception("option probing failed")
 
         if m:
+            m = [x.strip() for x in m]
             if '-h' in m: m.remove("-h")
             if '--help' in m: m.remove("--help")
             args = []
@@ -211,7 +233,7 @@ class AggroArgs(object):
             if not (os.path.isfile(p) and os.access(p, os.X_OK)):
                 continue
             if not "elf" in self._shell("file '%s'"%p, shell=True).lower():
-                LOG.debug("Skipping - NOT in ELF file format - %s"%p)
+                LOG.debug("Skipping - File-Format mismatch - not ELF - %s"%p)
                 continue
             
             LOG.debug( "#%d - processing: %s"%(nr, p))
@@ -223,6 +245,7 @@ class AggroArgs(object):
                 last_log = self._check_log()
                 try:
                     args = self._prepare_args(p,params,param_size,mode=mode)
+                    LOG.debug("probing args: %s"%repr(args))
                 except:
                     # options unparseable, 
                     LOG.debug("#%d - unparsable %s options - skipping"%(nr,mode))
@@ -240,13 +263,22 @@ class AggroArgs(object):
                     debug_args = ["'%s'"%a for a in args]
                     LOG.debug("Cmdline: %s %s"%(p," ".join(debug_args)))
                     a2lines = []
+                    eiplines = []
                     for l in last_log:
                         LOG.warning("     %s"%l)
                         a2line = self._addr2line(p,l)
                         a2lines.append(a2line)
                         LOG.warning("     Addr2Line: %s"%repr(a2line))#
+                        eipline = self._eip_to_pattern_location(l)
+                        eiplines.append(eipline)
+                        LOG.warning("     EIP_analysis: %s"%repr(eipline))
                         
-                    self.hits.append(Hit(path=p,args=args,loglines=last_log,addr2line=a2lines))
+                        
+                    self.hits.append(Hit(path=p,
+                                         args=args,
+                                         loglines=last_log,
+                                         addr2line=a2lines,
+                                         eip_analysis=eiplines))
                         
                         
                 else:
@@ -303,6 +335,7 @@ if __name__=='__main__':
             print "     [ ] Path:      %s"%h.path
             print "     [ ] LogLines: \n                %s"%("\n                ".join(h.loglines))
             print "     [ ] Addr2Line: %s"%h.addr2line
+            print "     [ ] EIP_Analysis: %s"%h.eip_analysis
             print "     [ ] Args:    \n                %s %s"%(h.path," ".join(["'%s'"%a for a in h.args]))
 
             nr +=1

@@ -58,6 +58,7 @@ if __name__=='__main__':
             print "     [ ] Path:      %s"%h.path
             print "     [ ] LogLines: \n                %s"%("\n                ".join(h.loglines))
             print "     [ ] Addr2Line: %s"%h.addr2line
+            print "     [ ] EIP_Analysis: %s"%h.eip_analysis
             print "     [ ] Args:    \n                %s %s"%(h.path," ".join(["'%s'"%a for a in h.args]))
 
             nr +=1
