@@ -11,6 +11,14 @@ LOG = QA_Logger.getLogger(name="argBrute")
 
 import subprocess, os,fnmatch, time, signal, re
 
+try:
+    any([])
+except:
+    # for python 2.4 - redefine any
+    def any(list):
+        for i in list:
+            if i==True: return True
+        return False
 
 class Hit(object):
     def __init__(self,path,args, loglines,addr2line):
@@ -154,7 +162,25 @@ class AggroArgs(object):
             
         return ret
         
+    def _prepare_args(self,p,params,param_size):
         
+        usage = self._shell("%s --help -h"%p, shell=True, max_execution_time=1) 
+        # parse args for cmdline switches
+        # prepare args array
+        # long: --[a-zA-Z0-9]+
+        # short: -[a-zA-Z0-9]+
+        m = re.findall(r"(\s-[a-zA-Z0-9]+)",usage)
+        if m:
+            if '-h' in m: m.remove("-h")
+            args = []
+            for a in m:
+                # append -switch, param, -switch,param
+                args.append(a)
+                args.append(self.createPatternCyclic(param_size))
+        else:
+            args = [self.createPatternCyclic(param_size) for x in range(params)]
+        
+        return args
         
                 
     def attack(self, params=1, param_size=999,max_execution_time=10):
@@ -174,9 +200,14 @@ class AggroArgs(object):
             nr +=1
             # get new log messages since last logcheck
             last_log = self._check_log()
-            args = [self.createPatternCyclic(param_size) for x in range(params)]
-            self._shell(cmd=p, args=args, max_execution_time=max_execution_time) 
+            args = self._prepare_args(p,params,param_size)
+            ret = self._shell(cmd=p, args=args, max_execution_time=max_execution_time) 
             last_log = self._check_log(compare_with=last_log)
+            #handle buffer overflow caught by stack guard
+            if any(s in ret.lower() for s in ['overflow','backtrace','memory map']):
+                last_log.append(ret)
+                LOG.warning("Buffer overflow caught by stack_guard - %s"%p)
+                
             if len(last_log):
                 LOG.FAIL( "#%d - new log entries detected! - %s"%(nr,p))
                 

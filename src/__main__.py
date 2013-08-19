@@ -2,7 +2,7 @@
 Created on 19.08.2013
 
 @author: martin
-@version: 1.0
+@version: 1.2
 '''
 if __name__=='__main__':
     import modules.QA_Logger as QA_Logger
