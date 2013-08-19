@@ -21,7 +21,7 @@ Features
 Notes
 =========
 
-* python 2.4
+python 2.4
 
 	#> unzip aggroArgs.zip
 	#> python __main__.py --help
