@@ -15,6 +15,13 @@ Features
 * addr2line resolution
 * commandline option probing
 * exception based buffer overflow detection (stack_guard)
+* will only scan ELF-Files marked as executable
+
+Notes
+=========
+* python 2.4
+	#> unzip aggroArgs.zip
+	#> python __main__.py --help
 
 
 Usage
@@ -41,3 +48,18 @@ Usage
 	                                             
 	                                             
 	                                             
+	                                             
+	                                             
+Use-Cases
+==========
+probe long, short and bruteforce commandline params skipping all *.so, *.so.* files and reboot,shutdown,runlevel,init
+
+	#> aggroArgs.zip --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init /usr/bin                          
+	                                             
+probe short options only:
+
+	#> aggroArgs.zip --modes=short --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init /usr/bin  
+	
+verbose output  (DEBUG 10 ... 50 CRITICAL):
+
+	#> aggroArgs.zip --verbosity=10 --blacklist=*.so,*.so.*,reboot,shutdown,runlevel,init /usr/bin 
