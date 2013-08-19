@@ -175,8 +175,10 @@ class AggroArgs(object):
         m = None
         if 'short' in mode:
             m = re.findall(r"(\s-[a-zA-Z0-9]+)",usage)
+            if not m: raise Exception("option probing failed")
         elif 'long' in mode:
             m = re.findall(r"(\s--[a-zA-Z0-9]+)",usage)
+            if not m: raise Exception("option probing failed")
 
         if m:
             if '-h' in m: m.remove("-h")
@@ -219,7 +221,12 @@ class AggroArgs(object):
             
                 # get new log messages since last logcheck
                 last_log = self._check_log()
-                args = self._prepare_args(p,params,param_size,mode=mode)
+                try:
+                    args = self._prepare_args(p,params,param_size,mode=mode)
+                except:
+                    # options unparseable, 
+                    LOG.debug("#%d - unparsable %s options - skipping"%(nr,mode))
+                    continue
                 ret = self._shell(cmd=p, args=args, max_execution_time=max_execution_time) 
                 last_log = self._check_log(compare_with=last_log)
                 #handle buffer overflow caught by stack guard
