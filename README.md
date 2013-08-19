@@ -1,4 +1,4 @@
-aggroArgs v1.2
+aggroArgs v1.3
 ===============
 
 Tags: brute-force command-line based buffer overflows, aggressive arguments
@@ -6,6 +6,7 @@ Tags: brute-force command-line based buffer overflows, aggressive arguments
 
 *ProTip*: srsly, do NOT run this script in a productive environment (yes, this includes your workstation!) or things might get tricky :)
 
+License: GPLv2 (see LICENSE)
 
 Features
 =========
@@ -21,6 +22,7 @@ Notes
 =========
 
 * python 2.4
+
 	#> unzip aggroArgs.zip
 	#> python __main__.py --help
 
