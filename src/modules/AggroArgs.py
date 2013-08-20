@@ -233,10 +233,10 @@ class AggroArgs(object):
             if not (os.path.isfile(p) and os.access(p, os.X_OK)):
                 continue
             if not "elf" in self._shell("file '%s'"%p, shell=True).lower():
-                LOG.debug("Skipping - File-Format mismatch - not ELF - %s"%p)
+                LOG.debug("[>] Skipping - File-Format mismatch - not ELF - %s"%p)
                 continue
             
-            LOG.debug( "#%d - processing: %s"%(nr, p))
+            LOG.info( "[*] #%d - processing: %s"%(nr, p))
             nr +=1
             
             for mode in modes:
@@ -245,33 +245,33 @@ class AggroArgs(object):
                 last_log = self._check_log()
                 try:
                     args = self._prepare_args(p,params,param_size,mode=mode)
-                    LOG.debug("probing args: %s"%repr(args))
+                    LOG.debug("  [ ] probing args: %s"%repr(args))
                 except:
                     # options unparseable, 
-                    LOG.debug("#%d - unparsable %s options - skipping"%(nr,mode))
+                    LOG.debug("  [x] unparsable %s options - skipping"%(mode))
                     continue
                 ret = self._shell(cmd=p, args=args, max_execution_time=max_execution_time) 
                 last_log = self._check_log(compare_with=last_log)
                 #handle buffer overflow caught by stack guard
                 if any(s in ret.lower() for s in ['terminated','overflow','backtrace','memory map']):
                     last_log.append(ret)
-                    LOG.warning("Buffer overflow caught by stack_guard - %s"%p)
+                    LOG.warning("  [!] Buffer overflow caught by stack_guard - %s"%p)
                     
                 if len(last_log):
-                    LOG.FAIL( "#%d - new log entries detected! - %s"%(nr,p))
+                    LOG.FAIL( "  [!] #%d - new log entries detected! - %s (%s)"%(nr,p,mode))
                     
                     debug_args = ["'%s'"%a for a in args]
-                    LOG.debug("Cmdline: %s %s"%(p," ".join(debug_args)))
+                    LOG.debug("  [ ] Cmdline: %s %s"%(p," ".join(debug_args)))
                     a2lines = []
                     eiplines = []
                     for l in last_log:
                         LOG.warning("     %s"%l)
                         a2line = self._addr2line(p,l)
                         a2lines.append(a2line)
-                        LOG.warning("     Addr2Line: %s"%repr(a2line))#
+                        LOG.warning("  [ ]     Addr2Line: %s"%repr(a2line))#
                         eipline = self._eip_to_pattern_location(l)
                         eiplines.append(eipline)
-                        LOG.warning("     EIP_analysis: %s"%repr(eipline))
+                        LOG.warning("  [ ]     EIP_analysis: %s"%repr(eipline))
                         
                         
                     self.hits.append(Hit(path=p,
@@ -282,7 +282,7 @@ class AggroArgs(object):
                         
                         
                 else:
-                    LOG.PASS("#%d - %s"%(nr,p))
+                    LOG.PASS("  [*] #%d - %s (%s) "%(nr,p,mode))
     
 if __name__=='__main__':
     import modules.SimpleOptparse as SimpleOptparse

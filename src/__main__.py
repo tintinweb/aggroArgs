@@ -14,7 +14,7 @@ if __name__=='__main__':
             (('--help',     '-h'),              "This help"):                                   False,
             (('--verbosity',  '-v'),            "Enable verbose output"):                       QA_Logger.QA_Logger.L_INFO,
             (('--file-extensions',  '-f'),      "filter file extensions"):                      None,
-            (('--blacklist','-b'),              "Filename blacklists"):                         "*.so,*.so.*",
+            (('--blacklist','-b'),              "Filename blacklists"):                         "*.so,*.so.*,dmesg,script,suspend,init,runlevel,reboot,shutdown,switchoff,*grep",
             (('--params','-p'),                 "number of params to supply"):                  1,
             (('--param-length','-l'),           "max length of a param passed to executable"):  999,     
             (('--process-timeout','-t'),        "max alive time of a process in seconds"):      5,   
@@ -33,7 +33,7 @@ if __name__=='__main__':
         LOG.info("Scanning for file-extensions: %s"%options['file-extensions'])
     if options['blacklist']:
         options['blacklist']=options['blacklist'].split(",")
-        LOG.info("Skipping blacklisted for files: %s"%options['blacklist'])
+        LOG.info("Skipping blacklisted files: %s"%options['blacklist'])
     if options['modes']:
         options['modes']=options['modes'].split(",")
         LOG.info("option probing modes enabled: %s"%options['modes'])
