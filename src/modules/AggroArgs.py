@@ -27,9 +27,6 @@ class Hit(object):
         self.loglines=loglines
         self.addr2line=addr2line
         self.eip_analysis = eip_analysis
-        
-        # set buffer overflow detection output to be written to stderr
-        os.environ['LIBC_FATAL_STDERR_']='1'
 
 
 class AggroArgs(object):
@@ -40,6 +37,8 @@ class AggroArgs(object):
         self.blacklist = blacklist
         
         self.hits = []
+        # set buffer overflow detection output to be written to stderr
+        os.environ['LIBC_FATAL_STDERR_']='1'
         
     def _shell(self,cmd,args=[], shell=False, max_execution_time=10):
         if isinstance(cmd,basestring):
@@ -227,17 +226,16 @@ class AggroArgs(object):
         # get initial log messages
         last_log = self._check_log()
         
-        nr = 0
-        for p in self.walk_dir():
+        for nr, p in enumerate(self.walk_dir()):
             # check if executable
             if not (os.path.isfile(p) and os.access(p, os.X_OK)):
                 continue
-            if not "elf" in self._shell("file '%s'"%p, shell=True).lower():
+            if not any(s in self._shell("file '%s'"%p, shell=True).lower() for s in ['elf','executable']):
+                #if not "elf" in self._shell("file '%s'"%p, shell=True).lower():
                 LOG.debug("[>] Skipping - File-Format mismatch - not ELF - %s"%p)
                 continue
             
             LOG.info( "[*] #%d - processing: %s"%(nr, p))
-            nr +=1
             
             for mode in modes:
             
@@ -330,8 +328,7 @@ if __name__=='__main__':
     print "\n\n===[Summary]==="
     for path,hits in results.iteritems():
         print "[*] Path: %s"%path
-        nr = 0
-        for h in hits:
+        for nr,h in enumerate(hits):
             print "\n  [%s]---------------------------------------------------------"%nr
             print "     [ ] Path:      %s"%h.path
             print "     [ ] LogLines: \n                %s"%("\n                ".join(h.loglines))
@@ -339,6 +336,5 @@ if __name__=='__main__':
             print "     [ ] EIP_Analysis: %s"%h.eip_analysis
             print "     [ ] Args:    \n                %s %s"%(h.path," ".join(["'%s'"%a for a in h.args]))
 
-            nr +=1
         
     print LOG.getStats()
