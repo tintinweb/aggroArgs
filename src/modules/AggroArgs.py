@@ -41,6 +41,7 @@ class AggroArgs(object):
     """AggroArgs Attack"""
     def __init__(self):
         """init"""
+        self.cache = {}
         self.hits = []
         self.exploit = Exploit()
         # set buffer overflow detection output to be written to stderr
@@ -88,6 +89,10 @@ class AggroArgs(object):
         
     def _prepare_args(self,p,params,param_size, mode=None):
         """generate args"""
+        cache = self.cache.get('prepare_args',{})
+        if cache.has_key(p):
+            return cache[p]
+        
         usage = self.exploit.shellex("%s --help -h"%p, shell=True, max_execution_time=1) 
         # parse args for cmdline switches
         # prepare args array
@@ -119,6 +124,7 @@ class AggroArgs(object):
         else:
             args = [self.exploit.createPatternCyclic(param_size) for x in range(params)]
         
+        self.cache['prepare_args'][p]=args
         return args
         
                         
