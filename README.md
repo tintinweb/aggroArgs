@@ -30,26 +30,28 @@ python 2.4
 Usage
 =========
 
-	Usage: aggroArgs.zip  [OPTIONS] [Argument(s) ...]
+	Usage: AggroArgs.py  [OPTIONS] [Argument(s) ...]
 	
 	Mandatory arguments to long options are mandatory for short options too.
 	
 	  -l <value>, --param-length=<value>         max length of a param passed to executable.
 	                                             *** DEFAULT='999'
 	  -R,         --no-recursion                 no recursive file scanning.
+	  -f <value>, --filter=<value>               filter filenames (e.g. qmail*).
+	                                             *** DEFAULT='None'
+	  -h,         --help                         This help.
 	  -p <value>, --params=<value>               number of params to supply.
 	                                             *** DEFAULT='1'
-	  -h,         --help                         This help.
-	  -b <value>, --blacklist=<value>            Filename blacklists.
-	                                             *** DEFAULT='*.so,*.so.*'
 	  -t <value>, --process-timeout=<value>      max alive time of a process in seconds.
 	                                             *** DEFAULT='5'
 	  -v <value>, --verbosity=<value>            Enable verbose output.
 	                                             *** DEFAULT='20'
 	  -m <value>, --modes=<value>                probe options (e.g. long,short,default).
 	                                             *** DEFAULT='short,long,default'
-	  -f <value>, --file-extensions=<value>      filter file extensions.
-	                                             *** DEFAULT='None'
+	  -b <value>, --blacklist=<value>            Filename blacklists.
+	                                             *** DEFAULT='*.so,*.so.*,dmesg,script,suspend,init,runlevel,reboot,shutdown,switchoff,*grep'
+	
+
 
                             
 	                                             
