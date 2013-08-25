@@ -100,10 +100,10 @@ class AggroArgs(object):
         # short: \s-[a-zA-Z0-9]+
         m = None
         if 'short' in mode:
-            m = re.findall(r"(\s-[a-zA-Z0-9]+)",usage)
+            m = re.findall(r"[\[\s](-[a-zA-Z0-9]+)",usage)
             if not m: raise Exception("option probing failed")
         elif 'long' in mode:
-            m = re.findall(r"(\s--[a-zA-Z0-9]+)",usage)
+            m = re.findall(r"[\[\s](--[a-zA-Z0-9_-]+)",usage)
             if not m: raise Exception("option probing failed")  
 
         if m:
@@ -124,6 +124,7 @@ class AggroArgs(object):
         else:
             args = [self.exploit.createPatternCyclic(param_size) for x in range(params)]
         
+        self.cache['prepare_args']={}
         self.cache['prepare_args'][p]=args
         return args
         
@@ -230,9 +231,10 @@ if __name__=='__main__':
                 LOG.debug("[>] Skipping - not executable - %s"%f)
                 continue
             # skip non elf files
-            if not any(s in x.shellex("file '%s'"%f, shell=True).lower() for s in ['elf','executable']):
-                LOG.debug("[>] Skipping - File-Format mismatch - not ELF - %s"%f)
-                continue
+            if  os.name in ['posix','mac']:
+                if not any(s in x.shellex("file '%s'"%f, shell=True).lower() for s in ['elf','executable']):
+                    LOG.debug("[>] Skipping - File-Format mismatch - not ELF - %s"%f)
+                    continue
             
             LOG.info( "[*] #%d - processing: %s"%(nr, f))
             
