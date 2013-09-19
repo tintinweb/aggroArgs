@@ -2,7 +2,7 @@
 Created on 19.08.2013
 
 @author: tintinweb
-@version: 1.3.1
+@version: 1.3.2
 '''
 if __name__=='__main__':
     import modules.QA_Logger as QA_Logger
@@ -24,6 +24,7 @@ if __name__=='__main__':
             (('--process-timeout','-t'),   "max alive time of a process in seconds"):      5,   
             (('--no-recursion', '-R'),     "no recursive file scanning"):                  False,   
             (('--modes',        '-m'),     "probe options (e.g. long,short,default)"):     "short,long,default",   
+            (('--output-poc',    '-o'),     "output directory for exploit PoC's "):         None, 
           }
     options,arguments=SimpleOptparse.parseOpts(optDef)
     LOG.setLevel(int(options['verbosity']))
@@ -81,11 +82,9 @@ if __name__=='__main__':
         print "[*] Path: %s"%path
         for nr,h in enumerate(hits):
             print "\n  [%s]---------------------------------------------------------"%nr
-            print "     [ ] Path:      %s"%h.path
-            print "     [ ] LogLines: \n                %s"%("\n                ".join(h.loglines))
-            print "     [ ] Addr2Line: %s"%h.addr2line
-            print "     [ ] EIP_Analysis: %s"%h.eip_analysis
-            print "     [ ] Args:    \n                %s %s"%(h.path," ".join(["'%s'"%a for a in h.args]))
-
+            print str(h)
+            if options['output-poc']:
+                with open("%s/%s_%s.py"%(options['output-poc'],str(nr),os.path.split(h.path)[-1]),'w') as f:
+                    f.write(x_aggro.create_poc(h))
         
     print LOG.getStats()

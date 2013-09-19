@@ -36,6 +36,14 @@ class Hit(object):
         for k,v in d:
             setattr(self,k,v)
             
+    def  __str__(self):
+        info = "  [x] Target:      %s"%self.path
+        info += "\n     [ ] LogLines: \n                %s"%("\n                ".join(self.loglines))
+        info += "\n     [ ] Addr2Line: %s"%self.addr2line
+        info += "\n     [ ] EIP_Analysis: %s"%self.eip_analysis
+        info += "\n     [ ] Args:    \n                %s %s"%(self.path, " ".join(["'%s'"%a for a in self.args])  )
+        return info
+            
 
 class AggroArgs(object):
     """AggroArgs Attack"""
@@ -61,8 +69,8 @@ class AggroArgs(object):
         if m:
             ip,sp = m.groups()
             
-            ret.append(self.exploit.shellex("addr2line -e %s %s"%(executable,ip),shell=True))
-            ret.append(self.exploit.shellex("addr2line -e %s %s"%(executable,sp),shell=True))
+            ret.append(self.exploit.shellex("addr2line -e %s %s"%(executable,ip),shell=True).strip())
+            ret.append(self.exploit.shellex("addr2line -e %s %s"%(executable,sp),shell=True).strip())
             
         return ret
     
@@ -179,6 +187,36 @@ class AggroArgs(object):
                     
             else:
                 LOG.PASS("  [*] %s (%s) "%(executable,mode))
+                
+                
+    def create_poc(self, hit):
+        template = """#! /usr/bin/env python
+# vim:ts=4:sw=4:expandtab
+'''Created on %s
+
+@author:  aggroArgs /
+@contact: https://github.com/tintinweb/aggroArgs
+---------------------------------------------
+Outline (max 350 chars): 
+
+%s
+---------------------------------------------
+'''
+import subprocess
+
+CMD = %s
+ARGS = %s
+
+if __name__=='__main__':
+    print "Target: %%s"%%CMD
+    print "[ ] executing, please stand by ..."
+    ret = subprocess.Popen([CMD]+ARGS, shell=False,stdout=subprocess.PIPE,stderr=subprocess.STDOUT) 
+    print "[*] done!"
+"""
+        import time
+        localtime=time.asctime( time.localtime(time.time()) )
+        return template%(localtime,str(hit)[:350],repr(hit.path),repr(hit.args))
+
     
 if __name__=='__main__':
     LOG = QA_Logger.getLogger(name="argBrute")
@@ -196,6 +234,7 @@ if __name__=='__main__':
             (('--process-timeout','-t'),   "max alive time of a process in seconds"):      5,   
             (('--no-recursion', '-R'),     "no recursive file scanning"):                  False,   
             (('--modes',        '-m'),     "probe options (e.g. long,short,default)"):     "short,long,default",   
+            (('--output-poc',   '-o'),     "output directory for exploit PoC's "):         None,   
           }
     options,arguments=SimpleOptparse.parseOpts(optDef)
     LOG.setLevel(int(options['verbosity']))
@@ -253,11 +292,9 @@ if __name__=='__main__':
         print "[*] Path: %s"%path
         for nr,h in enumerate(hits):
             print "\n  [%s]---------------------------------------------------------"%nr
-            print "     [ ] Path:      %s"%h.path
-            print "     [ ] LogLines: \n                %s"%("\n                ".join(h.loglines))
-            print "     [ ] Addr2Line: %s"%h.addr2line
-            print "     [ ] EIP_Analysis: %s"%h.eip_analysis
-            print "     [ ] Args:    \n                %s %s"%(h.path," ".join(["'%s'"%a for a in h.args]))
-    
+            print str(h)
+            if options['output-poc']:
+                with open("%s/%s_%s.py"%(options['output-poc'],str(nr),os.path.split(h.path)[-1]),'w') as f:
+                    f.write(x_aggro.create_poc(h))
         
     print LOG.getStats()
