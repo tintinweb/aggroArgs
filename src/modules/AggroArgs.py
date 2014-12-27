@@ -5,7 +5,6 @@ Created on 19.08.2013
 
 @author: tintinweb
 """
-
 import modules.QA_Logger as QA_Logger
 LOG = QA_Logger.getLogger(name="argBrute")
 from Exploit import Exploit
@@ -217,8 +216,9 @@ if __name__=='__main__':
         localtime=time.asctime( time.localtime(time.time()) )
         return template%(localtime,str(hit)[:350],repr(hit.path),repr(hit.args))
 
-    
+
 if __name__=='__main__':
+    print "WARNING!! -- AggroArgs.__main__ - deprecated - use __main__.py instead - only __main__.py will be maintained!"
     LOG = QA_Logger.getLogger(name="argBrute")
     import SimpleOptparse as SimpleOptparse
     from Scanner import Scanner
@@ -245,7 +245,7 @@ if __name__=='__main__':
         
     if options['filter']:
         options['filter']=options['filter'].split(",")
-        LOG.info("Scanning for filter: %s"%options['filter'])
+        LOG.info("Scanning with filter: %s"%options['filter'])
     if options['blacklist']:
         options['blacklist']=options['blacklist'].split(",")
         LOG.info("Skipping blacklisted files: %s"%options['blacklist'])
@@ -271,7 +271,7 @@ if __name__=='__main__':
                 continue
             # skip non elf files
             if  os.name in ['posix','mac']:
-                if not any(s in x.shellex("file '%s'"%f, shell=True).lower() for s in ['elf','executable']):
+                if not any(s in x.shellex("file -L '%s'"%f, shell=True).lower() for s in ['elf','executable']):
                     LOG.debug("[>] Skipping - File-Format mismatch - not ELF - %s"%f)
                     continue
             
