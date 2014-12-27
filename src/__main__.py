@@ -61,7 +61,7 @@ if __name__=='__main__':
                 continue
             # skip non elf files
             if  os.name in ['posix','mac']:
-                if not any(s in x.shellex("file '%s'"%f, shell=True).lower() for s in ['elf','executable']):
+                if not any(s in x.shellex("file -L '%s'"%f, shell=True).lower() for s in ['elf','executable']):
                     LOG.debug("[>] Skipping - File-Format mismatch - not ELF - %s"%f)
                     continue
             
