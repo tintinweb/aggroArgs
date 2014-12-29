@@ -208,7 +208,8 @@ class AggroArgs(object):
                 continue
             
             for args in argchains:
-                LOG.debug("  [ ] probing args: (truncated output to 400chars) %s"%repr(args)[:400])
+                txt_args = [a[100:] for a in args]
+                LOG.debug("  [ ] probing args: (truncated output to 100chars per item) %s"%txt_args)
                 # execute target
                 last_log = self.exploit.check_log()
                 ret = self.exploit.shellex(cmd=executable, args=args, max_execution_time=max_execution_time) 
