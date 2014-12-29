@@ -143,32 +143,34 @@ class AggroArgs(object):
         elif "smart-" in mode:
             # UsageParser NG
             up = UsageParser(appname=p, intext=usage)
-            argchain = up._build_argchain()                 # populates observed_options
-            if "smart-sequence" in mode:
-                cypad = self.exploit.createPatternCyclic(param_size)
-                try:
+            try:
+                argchain = up._build_argchain()                 # populates observed_options
+                if "smart-sequence" in mode:
+                    cypad = self.exploit.createPatternCyclic(param_size)
+
                     for chain in argchain:
                         LOG.debug("processing sequence: %s"%chain)
                         yield self._interpret_argchain(chain, longform=True, param_size=param_size) +[cypad]      # yield shortform
                         yield self._interpret_argchain(chain, longform=False, param_size=param_size) +[cypad]       # yield longform
-                except RuntimeError, re:
-                    LOG.warning("Warning parser error - skipping - %s"%(repr(re)))
-            elif "smart-short":
-                #create chains like:  -i -a -if <CYCLPATTERN> ...
-                list(argchain)       # populate observed_options
-                for o in (oo for oo in up.observed_options if oo.islong==False):
-                    args.append(str(o))
-                    if o.requires_value:
-                        args.append( self.exploit.createPatternCyclic(param_size))
-                yield args
-            elif "smart-long":
-                 #create chains like:  --interval --aoption --interface=<CYCLPATTERN> ...
-                list(argchain)       # populate observed_options
-                for o in (oo for oo in up.observed_options if oo.islong==True):
-                    if o.requires_value:
-                        args.append( "%s=%s"%(str(o),self.exploit.createPatternCyclic(param_size)))
-                yield args
-            # get all long options
+    
+                elif "smart-short":
+                    #create chains like:  -i -a -if <CYCLPATTERN> ...
+                    list(argchain)       # populate observed_options
+                    for o in (oo for oo in up.observed_options if oo.islong==False):
+                        args.append(str(o))
+                        if o.requires_value:
+                            args.append( self.exploit.createPatternCyclic(param_size))
+                    yield args
+                elif "smart-long":
+                     #create chains like:  --interval --aoption --interface=<CYCLPATTERN> ...
+                    list(argchain)       # populate observed_options
+                    for o in (oo for oo in up.observed_options if oo.islong==True):
+                        if o.requires_value:
+                            args.append( "%s=%s"%(str(o),self.exploit.createPatternCyclic(param_size)))
+                    yield args
+                # get all long options
+            except RuntimeError, re:
+                LOG.warning("Warning parser error - skipping - %s"%(repr(re)))
 
         ''' disable caching
         self.cache['prepare_args']={}
