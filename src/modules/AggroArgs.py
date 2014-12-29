@@ -176,7 +176,7 @@ class AggroArgs(object):
         for o in chain:
             if  o.typ=="TOptional":
                 # skip TOptional for now.. just deref it
-                res += self._interpret_argchain(o.e, long=long)
+                res += self._interpret_argchain(o.e, long=long, param_size=param_size)
             elif o.typ=="TVar":
                 # replace with cyclic pattern
                 res.append(self.exploit.createPatternCyclic(param_size))
