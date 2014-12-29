@@ -168,7 +168,8 @@ class UsageParser(object):
                 pass
             elif typ == 'MISMATCH':
                 #continue
-                raise RuntimeError('%r unexpected on line %d' % (value, line_num))
+                pass
+                #raise RuntimeError('%r unexpected on line %d' % (value, line_num))
             else:
                 column = mo.start() - line_start
                 yield Token(typ, value, line_num, column)
