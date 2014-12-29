@@ -214,6 +214,8 @@ class AggroArgs(object):
                 continue
             
             for args in argchains:
+                if len(args)==0:
+                    continue
                 txt_args=[]
                 for a in args:
                     if len(a)>25:
