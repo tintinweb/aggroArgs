@@ -23,7 +23,7 @@ if __name__=='__main__':
             (('--param-length', '-l'),     "max length of a param passed to executable"):  999,     
             (('--process-timeout','-t'),   "max alive time of a process in seconds"):      5,   
             (('--no-recursion', '-R'),     "no recursive file scanning"):                  False,   
-            (('--modes',        '-m'),     "probe options (e.g. long,short,default)"):     "short,long,default",   
+            (('--modes',        '-m'),     "probe options (e.g. long,short,smart-long,smart-short,smart-sequence,brute)"):     "short,long,default",   
             (('--output-poc',    '-o'),     "output directory for exploit PoC's "):         None, 
           }
     options,arguments=SimpleOptparse.parseOpts(optDef)

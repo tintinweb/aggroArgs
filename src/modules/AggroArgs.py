@@ -146,6 +146,7 @@ class AggroArgs(object):
             argchain = up._build_argchain()                 # populates observed_options
             if "smart-sequence" in mode:
                 for chain in argchain:
+                    LOG.debug("processing sequence: %s"%chain)
                     yield self._interpret_argchain(chain, longform=True, param_size=param_size)        # yield shortform
                     yield self._interpret_argchain(chain, longform=False, param_size=param_size)       # yield longform
                 
