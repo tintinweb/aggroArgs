@@ -145,11 +145,13 @@ class AggroArgs(object):
             up = UsageParser(appname=p, intext=usage)
             argchain = up._build_argchain()                 # populates observed_options
             if "smart-sequence" in mode:
-                for chain in argchain:
-                    LOG.debug("processing sequence: %s"%chain)
-                    yield self._interpret_argchain(chain, longform=True, param_size=param_size)        # yield shortform
-                    yield self._interpret_argchain(chain, longform=False, param_size=param_size)       # yield longform
-                
+                try:
+                    for chain in argchain:
+                        LOG.debug("processing sequence: %s"%chain)
+                        yield self._interpret_argchain(chain, longform=True, param_size=param_size)        # yield shortform
+                        yield self._interpret_argchain(chain, longform=False, param_size=param_size)       # yield longform
+                except RuntimeError, re:
+                    LOG.error("Warning parser error - skipping - %s"%(repr(re)))
             elif "smart-short":
                 #create chains like:  -i -a -if <CYCLPATTERN> ...
                 list(argchain)       # populate observed_options
