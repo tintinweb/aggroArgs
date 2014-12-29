@@ -119,10 +119,10 @@ class AggroArgs(object):
             m = None
             if 'short' in mode:
                 m = re.findall(r"[\[\s](-[a-zA-Z0-9]+)",usage)
-                if not m: raise Exception("option probing failed")
+                #if not m: raise Exception("option probing failed")
             elif 'long' in mode:
                 m = re.findall(r"[\[\s](--[a-zA-Z0-9_-]+)",usage)
-                if not m: raise Exception("option probing failed")  
+                #if not m: raise Exception("option probing failed")  
     
             if m:
                 m = [x.strip() for x in m]
