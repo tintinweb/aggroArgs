@@ -146,8 +146,8 @@ class AggroArgs(object):
             argchain = up._build_argchain()                 # populates observed_options
             if "smart-sequence" in mode:
                 for chain in argchain:
-                    yield self._interpret_argchain(chain, long=True, param_size=param_size)        # yield shortform
-                    yield self._interpret_argchain(chain, long=False, param_size=param_size)       # yield longform
+                    yield self._interpret_argchain(chain, longform=True, param_size=param_size)        # yield shortform
+                    yield self._interpret_argchain(chain, longform=False, param_size=param_size)       # yield longform
                 
             elif "smart-short":
                 #create chains like:  -i -a -if <CYCLPATTERN> ...
@@ -171,17 +171,17 @@ class AggroArgs(object):
         self.cache['prepare_args'][p]=args
         '''
                 
-    def _interpret_argchain(self, chain, param_size, long=None):
+    def _interpret_argchain(self, chain, param_size, longform=None):
         res = []
         for o in chain:
             if  o.typ=="TOptional":
                 # skip TOptional for now.. just deref it
-                res += self._interpret_argchain(o.e, long=long, param_size=param_size)
+                res += self._interpret_argchain(o.e, longform=longform, param_size=param_size)
             elif o.typ=="TVar":
                 # replace with cyclic pattern
-                res.append(self.exploit.createPatternCyclic(param_size))
+                res.append(self.exploit.createPatternCyclic(param_size)+str(o.e))
             elif o.typ=="TOpt":
-                if long and not o.islong==long:
+                if longform and not o.islong==longform:
                     # skip unrelated ones
                     continue
                 res.append(str(o))
@@ -202,7 +202,7 @@ class AggroArgs(object):
             
             try:
                 argchains = self._prepare_args(executable,params,param_size,mode=mode)
-            except:
+            except Exception, e:
                 # options unparseable, 
                 LOG.debug("  [x] unparseable %s options - skipping"%(mode))
                 continue
