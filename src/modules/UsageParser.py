@@ -111,9 +111,12 @@ class UsageParser(object):
                     src = stack
                 else:
                     src = chain
-                e = src.pop()
-                e.requires_value=True
-                src.append(e)
+                try:
+                    e = src.pop()
+                    e.requires_value=True
+                    src.append(e)
+                except Exception,e:
+                    pass
                 
             if prev_token and tok.line != prev_token.line and chain and not chain[-1].typ in ('TBrk', 'TOr',):
                 # insert Break on line changes to potentially abbr. some semantics
