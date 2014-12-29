@@ -169,8 +169,8 @@ class AggroArgs(object):
                             args.append( "%s=%s"%(str(o),self.exploit.createPatternCyclic(param_size)))
                     yield args
                 # get all long options
-            except RuntimeError, re:
-                LOG.warning("Warning parser error - skipping - %s"%(repr(re)))
+            except RuntimeError, e_re:
+                LOG.warning("Warning parser error - skipping - %s"%(repr(e_re)))
 
         ''' disable caching
         self.cache['prepare_args']={}
