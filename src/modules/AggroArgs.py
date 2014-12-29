@@ -142,7 +142,7 @@ class AggroArgs(object):
                 yield args
         elif "smart-" in mode:
             # UsageParser NG
-            up = UsageParser(appname=p, intext=txt)
+            up = UsageParser(appname=p, intext=usage)
             argchain = up._build_argchain()                 # populates observed_options
             if "smart-sequence" in mode:
                 for chain in argchain:
