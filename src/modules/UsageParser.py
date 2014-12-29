@@ -102,7 +102,8 @@ class UsageParser(object):
                 state.add('optional')
                 stack = TOptional()
             elif tok.typ in ('OPTIONAL_END'):
-                state.remove("optional")
+                if "optional" in state:
+                    state.remove("optional")
             elif tok.typ in ('OR'):
                 stack.append(TOr(tok.value.strip()))
             elif tok.typ in ("ASSIGN") and prev_token.typ in ('OPT_LONG','OPT_SHORT','OPT_ALT'):
