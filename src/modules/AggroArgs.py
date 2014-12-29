@@ -211,7 +211,7 @@ class AggroArgs(object):
                 txt_args=[]
                 for a in args:
                     if len(a)>25:
-                        txt_args.append("%s.."%a[25:])
+                        txt_args.append("%s.."%a[:25])
                     else:
                         txt_args.append(a)
                 LOG.debug("  [ ] probing args: (items truncated) %s"%txt_args)
