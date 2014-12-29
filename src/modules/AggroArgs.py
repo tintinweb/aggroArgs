@@ -151,7 +151,7 @@ class AggroArgs(object):
                 
             elif "smart-short":
                 #create chains like:  -i -a -if <CYCLPATTERN> ...
-                len(argchain)       # populate observed_options
+                list(argchain)       # populate observed_options
                 for o in (oo for oo in up.observed_options if oo.islong==False):
                     args.append(str(o))
                     if o.requires_value:
@@ -159,7 +159,7 @@ class AggroArgs(object):
                 yield args
             elif "smart-long":
                  #create chains like:  --interval --aoption --interface=<CYCLPATTERN> ...
-                len(argchain)       # populate observed_options
+                list(argchain)       # populate observed_options
                 for o in (oo for oo in up.observed_options if oo.islong==True):
                     if o.requires_value:
                         args.append( "%s=%s"%(str(o),self.exploit.createPatternCyclic(param_size)))
