@@ -114,7 +114,7 @@ class UsageParser(object):
                 e.requires_value=True
                 src.append(e)
                 
-            if prev_token and tok.line != prev_token.line and chain and not chain[-1].typ in ('TBrk', 'TOr','TOptional'):
+            if prev_token and tok.line != prev_token.line and chain and not chain[-1].typ in ('TBrk', 'TOr',):
                 # insert Break on line changes to potentially abbr. some semantics
                 #chain.append(TBrk(''))
                 break_chop=True
@@ -346,7 +346,7 @@ if __name__=='__main__':
     For complete documentation, run: info coreutils 'ls invocation'
     '''
     
-    xtxt ='''Usage:
+    txt ='''Usage:
       arp [-vn]  [<HW>] [-i <if>] [-a] [<hostname>]             <-Display ARP cache
       arp [-v]          [-i <if>] -d  <host> [pub]               <-Delete ARP entry
       arp [-vnD] [<HW>] [-i <if>] -f  [<filename>]            <-Add entry from file
@@ -374,7 +374,6 @@ if __name__=='__main__':
     up = UsageParser(appname=None, intext=txt)
     for chain in up._build_argchain():
         print(chain)
-        print str(chain)
         print _interpret_chains(chain)
     # get all long options
     for o in (oo for oo in up.observed_options if oo.islong==True):
