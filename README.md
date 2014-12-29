@@ -1,4 +1,4 @@
-aggroArgs v1.3.x
+aggroArgs 
 ===============
 
 Tags: brute-force command-line based buffer overflows, aggressive arguments
@@ -18,6 +18,8 @@ Features
 * exception based buffer overflow detection
 * only scan ELF-Files marked as executable
 * autogenerate PoCs
+* 'smarter' usage parsing and command line sequences using smart modes like: smart-sequence,smart-long,smart-short
+* brute mode
 
 Notes
 =========
@@ -49,7 +51,7 @@ Usage
 	                                             *** DEFAULT='5'
 	  -v <value>, --verbosity=<value>            Enable verbose output.
 	                                             *** DEFAULT='20'
-	  -m <value>, --modes=<value>                probe options (e.g. long,short,default).
+	  -m <value>, --modes=<value>                probe options (e.g. long,short,smart-sequence,smart-long,smart-short,brute).
 	                                             *** DEFAULT='short,long,default'
 	  -b <value>, --blacklist=<value>            Filename blacklists.
 	                                             *** DEFAULT='*.so,*.so.*,dmesg,script,suspend,init,runlevel,reboot,shutdown,switchoff,*grep'
