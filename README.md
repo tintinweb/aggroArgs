@@ -13,11 +13,11 @@ Features
 
 * cyclic pattern overflows with automatic offset calculation
 * segfault monitoring
-* addr2line resolution
-* command-line option probing (long/short options)
+* addr2line 
+* smart command-line option probing (long/short options)
 * exception based buffer overflow detection
 * only scan ELF-Files marked as executable
-* autogenerate PoCs for each overflow
+* autogenerate PoCs
 
 Notes
 =========

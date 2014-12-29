@@ -8,6 +8,7 @@ Created on 19.08.2013
 import modules.QA_Logger as QA_Logger
 LOG = QA_Logger.getLogger(name="argBrute")
 from Exploit import Exploit
+from UsageParser import UsageParser
 
 import os, re
 
@@ -96,96 +97,153 @@ class AggroArgs(object):
         
     def _prepare_args(self,p,params,param_size, mode=None):
         """generate args"""
+        
+        '''  -- disable caching
         cache = self.cache.get('prepare_args',{})
         if cache.has_key(p):
             return cache[p]
+        '''
         
         usage = self.exploit.shellex("%s --help -h"%p, shell=True, max_execution_time=1) 
+        
         # parse args for cmdline switches
         # prepare args array
         # long: \s--[a-zA-Z0-9]+
         # short: \s-[a-zA-Z0-9]+
-        m = None
-        if 'short' in mode:
-            m = re.findall(r"[\[\s](-[a-zA-Z0-9]+)",usage)
-            if not m: raise Exception("option probing failed")
-        elif 'long' in mode:
-            m = re.findall(r"[\[\s](--[a-zA-Z0-9_-]+)",usage)
-            if not m: raise Exception("option probing failed")  
+        # legacy stuff
+        args=[]
+        if mode in "brute":
+            yield [self.exploit.createPatternCyclic(param_size) for x in range(params)]
+            
+        elif mode in ("short","long"):
+            m = None
+            if 'short' in mode:
+                m = re.findall(r"[\[\s](-[a-zA-Z0-9]+)",usage)
+                if not m: raise Exception("option probing failed")
+            elif 'long' in mode:
+                m = re.findall(r"[\[\s](--[a-zA-Z0-9_-]+)",usage)
+                if not m: raise Exception("option probing failed")  
+    
+            if m:
+                m = [x.strip() for x in m]
+                if '-h' in m: m.remove("-h")
+                if '--help' in m: m.remove("--help")
+                for a in m:
+                    # append -switch, param, -switch,param
+                    a=a.strip()
+                    if 'short' in mode:
+                        #append option, value
+                        args.append(a)
+                        args.append(self.exploit.createPatternCyclic(param_size))
+                    else:
+                        #append option=value
+                        args.append("%s=%s"%(a,self.exploit.createPatternCyclic(param_size)))                
+                # for legacy
+                yield args
+        elif "smart-" in mode:
+            # UsageParser NG
+            up = UsageParser(appname=p, intext=txt)
+            argchain = up._build_argchain()                 # populates observed_options
+            if "smart-sequence" in mode:
+                for chain in argchain:
+                    yield self._interpret_argchain(chain, long=True)        # yield shortform
+                    yield self._interpret_argchain(chain, long=False)       # yield longform
+                
+            elif "smart-short":
+                #create chains like:  -i -a -if <CYCLPATTERN> ...
+                len(argchain)       # populate observed_options
+                for o in (oo for oo in up.observed_options if oo.islong==False):
+                    args.append(str(o))
+                    if o.requires_value:
+                        args.append( self.exploit.createPatternCyclic(param_size))
+                yield args
+            elif "smart-long":
+                 #create chains like:  --interval --aoption --interface=<CYCLPATTERN> ...
+                len(argchain)       # populate observed_options
+                for o in (oo for oo in up.observed_options if oo.islong==True):
+                    if o.requires_value:
+                        args.append( "%s=%s"%(str(o),self.exploit.createPatternCyclic(param_size)))
+                yield args
+            # get all long options
 
-        if m:
-            m = [x.strip() for x in m]
-            if '-h' in m: m.remove("-h")
-            if '--help' in m: m.remove("--help")
-            args = []
-            for a in m:
-                # append -switch, param, -switch,param
-                a=a.strip()
-                if 'short' in mode:
-                    #append option, value
-                    args.append(a)
-                    args.append(self.exploit.createPatternCyclic(param_size))
-                else:
-                    #append option=value
-                    args.append("%s=%s"%(a,self.exploit.createPatternCyclic(param_size)))
-        else:
-            args = [self.exploit.createPatternCyclic(param_size) for x in range(params)]
-        
+        ''' disable caching
         self.cache['prepare_args']={}
         self.cache['prepare_args'][p]=args
-        return args
-        
-                        
+        '''
                 
-    def attack(self, executable, params=1, param_size=999,max_execution_time=10,modes=['short','long','default']):
+    def _interpret_argchain(self, chain, long=None):
+        res = []
+        for o in chain:
+            if  o.typ=="TOptional":
+                # skip TOptional for now.. just deref it
+                res += self._interpret_argchain(o.e, long=long)
+            elif o.typ=="TVar":
+                # replace with cyclic pattern
+                res.append(self.exploit.createPatternCyclic(param_size))
+            elif o.typ=="TOpt":
+                if long and not o.islong==long:
+                    # skip unrelated ones
+                    continue
+                res.append(str(o))
+            '''
+            else:
+                raise Exception("ERROR")
+            '''
+        return res    
+        
+           
+    def attack(self, executable, params=1, param_size=999,max_execution_time=10,modes=['short','long','default','brute','smart-long','smart-short']):
         """attack single file"""
         # get initial log messages
         last_log = self.exploit.check_log()
                 
         for mode in modes:
-        
-            # get new log messages since last logcheck
-            last_log = self.exploit.check_log()
+            # get logdiff
+            
             try:
-                args = self._prepare_args(executable,params,param_size,mode=mode)
-                LOG.debug("  [ ] probing args: %s"%repr(args))
+                argchains = self._prepare_args(executable,params,param_size,mode=mode)
             except:
                 # options unparseable, 
                 LOG.debug("  [x] unparseable %s options - skipping"%(mode))
                 continue
-            ret = self.exploit.shellex(cmd=executable, args=args, max_execution_time=max_execution_time) 
-            last_log = self.exploit.check_log(compare_with=last_log)
-            #handle buffer overflow caught by stack guard
-            if any(s in ret.lower() for s in ['terminated','overflow','backtrace','memory map']):
-                last_log.append(ret)
-                LOG.warning("  [!] Buffer overflow caught by stack_guard - %s"%executable)
-                
-            if len(last_log):
-                LOG.FAIL( "  [!] LogCheck failed! - %s (%s)"%(executable,mode))
-                
-                debug_args = ["'%s'"%a for a in args]
-                LOG.debug("  [ ] Cmdline: %s %s"%(executable," ".join(debug_args)))
-                a2lines = []
-                eiplines = []
-                for l in last_log:
-                    LOG.warning("     %s"%l)
-                    a2line = self._addr2line(executable,l)
-                    a2lines.append(a2line)
-                    LOG.warning("  [ ]     Addr2Line: %s"%repr(a2line))#
-                    eipline = self._eip_to_pattern_location(l)
-                    eiplines.append(eipline)
-                    LOG.warning("  [ ]     EIP_analysis: %s"%repr(eipline))
+            
+            for args in argchains:
+                LOG.debug("  [ ] probing args: (truncated output to 400chars) %s"%repr(args)[:400])
+                # execute target
+                last_log = self.exploit.check_log()
+                ret = self.exploit.shellex(cmd=executable, args=args, max_execution_time=max_execution_time) 
+                last_log = self.exploit.check_log(compare_with=last_log)
+                #handle buffer overflow caught by stack guard
+                if any(s in ret.lower() for s in ['terminated','overflow','backtrace','memory map']):
+                    last_log.append(ret)
+                    LOG.warning("  [!] Buffer overflow caught by stack_guard - %s"%executable)
                     
+                if len(last_log):
+                    LOG.FAIL( "  [!] LogCheck failed! - %s (%s)"%(executable,mode))
                     
-                self.hits.append(Hit(path=executable,
-                                     args=args,
-                                     loglines=last_log,
-                                     addr2line=a2lines,
-                                     eip_analysis=eiplines))
-                    
-                    
-            else:
-                LOG.PASS("  [*] %s (%s) "%(executable,mode))
+                    debug_args = ["'%s'"%a for a in args]
+                    LOG.debug("  [ ] Cmdline: %s %s"%(executable," ".join(debug_args)))
+                    a2lines = []
+                    eiplines = []
+                    for l in last_log:
+                        LOG.warning("     %s"%l)
+                        a2line = self._addr2line(executable,l)
+                        a2lines.append(a2line)
+                        LOG.warning("  [ ]     Addr2Line: %s"%repr(a2line))#
+                        eipline = self._eip_to_pattern_location(l)
+                        eiplines.append(eipline)
+                        LOG.warning("  [ ]     EIP_analysis: %s"%repr(eipline))
+                        
+                        
+                    self.hits.append(Hit(path=executable,
+                                         args=args,
+                                         loglines=last_log,
+                                         addr2line=a2lines,
+                                         eip_analysis=eiplines))
+                        
+                        
+                else:
+                    LOG.PASS("  [*] %s (%s) "%(executable,mode))
                 
                 
     def create_poc(self, hit):
