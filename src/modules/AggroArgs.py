@@ -146,8 +146,8 @@ class AggroArgs(object):
             argchain = up._build_argchain()                 # populates observed_options
             if "smart-sequence" in mode:
                 for chain in argchain:
-                    yield self._interpret_argchain(chain, long=True)        # yield shortform
-                    yield self._interpret_argchain(chain, long=False)       # yield longform
+                    yield self._interpret_argchain(chain, long=True, param_size=param_size)        # yield shortform
+                    yield self._interpret_argchain(chain, long=False, param_size=param_size)       # yield longform
                 
             elif "smart-short":
                 #create chains like:  -i -a -if <CYCLPATTERN> ...
@@ -171,7 +171,7 @@ class AggroArgs(object):
         self.cache['prepare_args'][p]=args
         '''
                 
-    def _interpret_argchain(self, chain, long=None):
+    def _interpret_argchain(self, chain, param_size, long=None):
         res = []
         for o in chain:
             if  o.typ=="TOptional":
