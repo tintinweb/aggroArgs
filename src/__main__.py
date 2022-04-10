@@ -84,7 +84,8 @@ if __name__=='__main__':
             print "\n  [%s]---------------------------------------------------------"%nr
             print str(h)
             if options['output-poc']:
-                with open("%s/%s_%s.py"%(options['output-poc'],str(nr),os.path.split(h.path)[-1]),'w') as f:
+                with open("%s/%s_%s.py"%(options['output-poc'],str(nr),os.path.split(h.path)[-1]),'w+') as f:
                     f.write(x_aggro.create_poc(h))
+                    f.close()
         
     print LOG.getStats()
